@@ -2,6 +2,8 @@ package dp.assignments.ovchip.domain;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "ov_chipkaart")
@@ -18,6 +20,10 @@ public class OVChipkaart {
     @JoinColumn(name = "reiziger_id", referencedColumnName = "reiziger_id")
     private Reiziger reiziger;
 
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "ov_chipkaart_product", joinColumns = @JoinColumn(name = "kaart_nummer"), inverseJoinColumns = @JoinColumn(name = "product_nummer"))
+    private Set<Product> producten = new HashSet<>();
+
     public OVChipkaart(int kaartNummer, Date geldigTot, int klasse, double saldo, Reiziger reiziger) {
         this.kaartNummer = kaartNummer;
         this.geldigTot = geldigTot;
@@ -26,9 +32,7 @@ public class OVChipkaart {
         this.reiziger = reiziger;
     }
 
-    public OVChipkaart() {
-
-    }
+    public OVChipkaart() {}
 
     public int getKaartNummer() {
         return kaartNummer;
@@ -68,6 +72,24 @@ public class OVChipkaart {
 
     public void setReiziger(Reiziger reiziger) {
         this.reiziger = reiziger;
+    }
+
+    public Set<Product> getProducten() {
+        return producten;
+    }
+
+    public void setProducten(Set<Product> producten) {
+        this.producten = producten;
+    }
+
+    public void addProduct(Product product) {
+        producten.add(product);
+        product.getOvChipkaarten().add(this);
+    }
+
+    public void removeProduct(Product product) {
+        producten.remove(product);
+        product.getOvChipkaarten().remove(this);
     }
 
     @Override

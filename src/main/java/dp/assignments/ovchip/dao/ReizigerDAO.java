@@ -1,6 +1,7 @@
 package dp.assignments.ovchip.dao;
 
 import dp.assignments.ovchip.database.HibernateUtil;
+import dp.assignments.ovchip.domain.Product;
 import dp.assignments.ovchip.domain.Reiziger;
 import dp.assignments.ovchip.interfaces.IReizigerDAO;
 import org.hibernate.Session;
@@ -22,17 +23,26 @@ public class ReizigerDAO implements IReizigerDAO {
 
     @Override
     public boolean save(Reiziger reiziger) {
-        return HibernateUtil.executeTransaction(session -> session.save(reiziger), session);
+        return HibernateUtil.executeTransaction(session -> {
+            session.merge(reiziger);
+            return null;
+        }, session) != null;
     }
 
     @Override
     public boolean update(Reiziger reiziger) {
-        return HibernateUtil.executeTransaction(session -> session.update(reiziger), session);
+        return HibernateUtil.executeTransaction(session -> {
+            session.merge(reiziger);
+            return null;
+        }, session) != null;
     }
 
     @Override
     public boolean delete(Reiziger reiziger) {
-        return HibernateUtil.executeTransaction(session -> session.delete(reiziger), session);
+        return HibernateUtil.executeTransaction(session -> {
+            session.delete(reiziger);
+            return null;
+        }, session) != null;
     }
 
     @Override

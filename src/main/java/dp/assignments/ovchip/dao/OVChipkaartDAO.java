@@ -20,18 +20,27 @@ public class OVChipkaartDAO implements IOVChipkaartDAO {
     }
 
     @Override
-    public boolean save(OVChipkaart ovChipkaart) throws SQLException {
-        return HibernateUtil.executeTransaction(session -> session.merge(ovChipkaart), session);
+    public boolean save(OVChipkaart ovChipkaart) {
+        return HibernateUtil.executeTransaction(session -> {
+            session.merge(ovChipkaart);
+            return null;
+        }, session) != null;
     }
 
     @Override
-    public boolean update(OVChipkaart ovChipkaart) throws SQLException {
-        return HibernateUtil.executeTransaction(session -> session.merge(ovChipkaart), session);
+    public boolean update(OVChipkaart ovChipkaart) {
+        return HibernateUtil.executeTransaction(session -> {
+            session.merge(ovChipkaart);
+            return null;
+        }, session) != null;
     }
 
     @Override
-    public boolean delete(OVChipkaart ovChipkaart) throws SQLException {
-        return HibernateUtil.executeTransaction(session -> session.delete(ovChipkaart), session);
+    public boolean delete(OVChipkaart ovChipkaart) {
+        return HibernateUtil.executeTransaction(session -> {
+            session.delete(ovChipkaart);
+            return null;
+        }, session) != null;
     }
 
     @Override

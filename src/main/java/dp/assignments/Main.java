@@ -1,13 +1,16 @@
 package dp.assignments;
 
 import dp.assignments.ovchip.dao.OVChipkaartDAO;
+import dp.assignments.ovchip.dao.ProductDAO;
 import dp.assignments.ovchip.database.HibernateUtil;
 import dp.assignments.ovchip.domain.OVChipkaart;
+import dp.assignments.ovchip.domain.Product;
 import dp.assignments.ovchip.domain.Reiziger;
 import dp.assignments.ovchip.dao.ReizigerDAO;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.util.List;
@@ -15,15 +18,19 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) throws SQLException {
 
-        testReizigerDAO(new ReizigerDAO(openSession()));
-        testOVChipkaartDAO(new OVChipkaartDAO(openSession()));
+        Session session = openSession();
+        OVChipkaartDAO odao = new OVChipkaartDAO(session);
+
+//        testReizigerDAO(new ReizigerDAO(session));
+//        testOVChipkaartDAO(odao);
+        testProductDAO(new ProductDAO(session), odao);
 
         HibernateUtil.shutdown();
     }
 
     // Connection with Hibernte
     public static Session openSession() throws SQLException {
-        SessionFactory sessionFactory = HibernateUtil.getSessionFactory();
+        SessionFactory sessionFactory = HibernateUtil.buildSessionFactory();
         return sessionFactory.openSession();
     }
 
@@ -135,5 +142,59 @@ public class Main {
         }
 
         System.out.println("\n---------- Einde test ReizigerDAO -------------");
+    }
+
+    private static void testProductDAO(ProductDAO productDAO, OVChipkaartDAO ovChipkaartDAO) throws SQLException {
+        System.out.println("\n---------- Test ProductDAO -------------");
+
+        List<Product> products = productDAO.findAll();
+        System.out.println("[Test] ProductDAO.findAll() geeft de volgende producten:");
+        for (Product p : products) {
+            System.out.println(p);
+        }
+        System.out.println();
+
+        Reiziger reiziger = new Reiziger(1, "G", "van", "Rijn", Date.valueOf("2002-09-17"));
+        OVChipkaart ovChipkaart = new OVChipkaart(839204811, Date.valueOf("2028-07-25"), 2, 0.00, reiziger);
+        ovChipkaartDAO.save(ovChipkaart);
+
+        Product product = new Product(101, "Treinkaartje", "Een kaartje voor de trein", new BigDecimal("25.00"));
+
+        System.out.print("[Test] Eerst " + products.size() + " producten, na ProductDAO.save() ");
+        productDAO.save(product);
+        products = productDAO.findAll();
+        System.out.println(products.size() + " producten\n");
+
+        System.out.println("[Test] Update de prijs van product met nummer 101");
+        product.setPrijs(new BigDecimal("30.00"));
+        productDAO.update(product);
+        System.out.println();
+
+        System.out.println("[Test] Vind product met nummer 101");
+        Product foundProduct = productDAO.findById(101);
+        if (foundProduct != null) {
+            System.out.println("Product gevonden: " + foundProduct);
+        } else {
+            System.out.println("Geen product gevonden met nummer 101");
+        }
+        System.out.println();
+
+        System.out.println("[Test] Koppel product met nummer 101 aan OV-chipkaart met nummer 839204811");
+        ovChipkaart.addProduct(product);
+        ovChipkaartDAO.update(ovChipkaart);
+        List<Product> productsForChipkaart = productDAO.findByOVChipkaart(ovChipkaart);
+        System.out.println("Gevonden producten voor OV-chipkaart 839204811:");
+        for (Product p : productsForChipkaart) {
+            System.out.println(p);
+        }
+        System.out.println();
+
+        System.out.println("[Test] Verwijder product met nummer 101");
+        ovChipkaartDAO.delete(ovChipkaart);
+        productDAO.delete(product);
+        products = productDAO.findAll();
+        System.out.println("Aantal producten na ProductDAO.delete(): " + products.size());
+
+        System.out.println("\n---------- Einde test ProductDAO -------------");
     }
 }
